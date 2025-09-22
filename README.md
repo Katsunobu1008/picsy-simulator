@@ -1,0 +1,2 @@
+# picsy-simulator
+PICSYのシミュレーションを行うためのダッシュボードを作成する
