@@ -1,5 +1,5 @@
 // このファイルがどのパッケージ（住所）に属しているかを示す宣言
-package com.example.picsyengine;
+package com.example.picsy_engine;
 
 // 「EJMLライブラリからSimpleMatrixという道具を使います」というインポート宣言
 import org.ejml.simple.SimpleMatrix;
