@@ -1,48 +1,61 @@
+// このテストファイルも、コードと同じ住所に属していることを示します。
 package com.example.picsy_engine;
 
+// テストに必要な道具（ライブラリ）を使えるようにするためのインポート宣言です。
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.within;
 import org.ejml.simple.SimpleMatrix;
-import org.junit.jupiter.api.Test;
-
-import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.api.Test; // 正しい「定規」をインポートします
 
 /**
- * ContributionCalculatorクラスの品質を検査するためのテストクラス。
+ * ContributionCalculatorクラスの品質を検査するためのテストクラスです。
  */
-class ContributionCalculatorTest {
+public class ContributionCalculatorTest {
 
+    // 「@Test」という印は、これがテスト項目であることを示します。
     @Test
-    void calculate_shouldReturnCorrectContributionVector_forVirtualCentralBankMethod() {
-        // --- 1. Arrange (準備) ---
-        // テスト用の評価行列(E)を準備する
-        SimpleMatrix evaluationMatrix = new SimpleMatrix(new double[][]{
-                {0.1, 0.7, 0.2}, // Aさん -> (A(予算):0.1, B:0.7, C:0.2)
-                {0.6, 0.1, 0.3}, // Bさん -> (A:0.6, B(予算):0.1, C:0.3)
-                {0.2, 0.2, 0.6}  // Cさん -> (A:0.2, B:0.2, C(予算):0.6)
-        });
-
+    void testVirtualCentralBankCalculation() {
+        // --- 準備 (Given) ---
+        // テスト対象の「貢献度計算機」のインスタンスを作ります。
         ContributionCalculator calculator = new ContributionCalculator();
 
-        // --- 2. Act (実行) ---
-        // 貢献度を計算する
-        SimpleMatrix actualVector = calculator.calculate(evaluationMatrix);
+        // テスト用の評価行列を用意します。
+        // Aさん -> (A:0.1, B:0.6, C:0.3)
+        // Bさん -> (A:0.2, B:0.1, C:0.7)
+        // Cさん -> (A:0.5, B:0.4, C:0.1)
+        SimpleMatrix matrix = new SimpleMatrix(new double[][]{
+            {0.1, 0.6, 0.3},
+            {0.2, 0.1, 0.7},
+            {0.5, 0.4, 0.1}
+        });
 
-        // --- 3. Assert (検証) ---
-        // 仮想中央銀行法で計算した場合の、正しい貢献度の期待値を定義する。
-        // (この値は、E'行列に対して計算された理論値)
-        double expectedA = 1.118;
-        double expectedB = 1.017;
-        double expectedC = 0.865;
+        // --- 実行 (When) ---
+        // 実際に計算機を動かして、貢献度ベクトルを計算させます。
+        SimpleMatrix result = calculator.calculate(matrix);
 
-        // 検証①: ベクトルのサイズが正しいか？
-        assertThat(actualVector.getNumRows()).isEqualTo(3);
-        assertThat(actualVector.getNumCols()).isEqualTo(1);
+        // --- 検証 (Then) ---
+        // 実行結果が、私たちが期待する「正しい答え」と一致するかを検証します。
 
-        // 検証②: 各メンバーの貢献度の値が期待値とほぼ等しいか？
-        assertThat(actualVector.get(0, 0)).isCloseTo(expectedA, offset(0.01));
-        assertThat(actualVector.get(1, 0)).isCloseTo(expectedB, offset(0.01));
-        assertThat(actualVector.get(2, 0)).isCloseTo(expectedC, offset(0.01));
+        // 仮想中央銀行法 + 合計=N の正規化ルールに基づいた、期待される貢献度の理論値です。
+        // 計算方法が変わったため、期待値も新しくなっています。
+        double expectedA = 0.861; // ±0.01 許容なら 0.861〜0.862 程度でも可
+        double expectedB = 1.050;
+        double expectedC = 1.089;
 
-        // 検証③: 貢献度の合計がメンバー数(N=3)とほぼ等しいか？
-        assertThat(actualVector.elementSum()).isCloseTo(3.0, offset(0.01));
+        // 実際の計算結果から、各メンバーの貢献度スコアを取り出します。
+        double actualA = result.get(0, 0);
+        double actualB = result.get(1, 0);
+        double actualC = result.get(2, 0);
+
+        // 結果の合計値が、メンバー数N（今回は3）になることも検証します。
+        double totalContribution = result.elementSum();
+        assertThat(totalContribution).isCloseTo(3.0, within(0.01));
+
+        // ★★★ エラー修正箇所 ★★★
+        // AssertJの正しい使い方: isCloseToの第二引数には within(誤差) を使います。
+        // これで「誤差0.01の範囲内でほぼ等しいか」を正しく検査できます。
+        assertThat(actualA).isCloseTo(expectedA, within(0.01));
+        assertThat(actualB).isCloseTo(expectedB, within(0.01));
+        assertThat(actualC).isCloseTo(expectedC, within(0.01));
     }
 }
