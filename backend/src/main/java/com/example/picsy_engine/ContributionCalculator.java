@@ -27,7 +27,7 @@ public class ContributionCalculator {
         // 1) VCB 変換で E' を作成
         SimpleMatrix Eprime = transformForVirtualCentralBank(evaluationMatrix);
 
-        int n = Eprime.numRows();
+        int n = Eprime.getNumRows();
         SimpleMatrix c = new SimpleMatrix(n, 1);
         c.fill(1.0); // 初期ベクトルは全要素1（中立）
 
