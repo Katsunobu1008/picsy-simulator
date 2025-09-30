@@ -61,7 +61,7 @@ public class ContributionCalculator {
 
     /** VCB 変換: E' = E - B + (B*D)/(N-1) */
     private SimpleMatrix transformForVirtualCentralBank(SimpleMatrix E) {
-        int n = E.numRows();
+        int n = E.getNumRows();
         if (n <= 1) return E.copy();
 
         // B: diag(E_ii)
