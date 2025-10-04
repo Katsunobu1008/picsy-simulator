@@ -10,7 +10,7 @@
     </div>
   </header>
 
-  <!-- 2カラム：左=Initialize + 操作パネル、右=E & c & Power の表 -->
+  <!  -- 2カラム：左=Initialize + 操作パネル、右=E & c & Power の表 -->
   <main class="grid" style="grid-template-columns: 420px 1fr; margin:16px; column-gap:16px;">
     <section class="panel" style="display:flex; flex-direction:column; gap:16px; overflow:auto;">
       <InitializeForm />
