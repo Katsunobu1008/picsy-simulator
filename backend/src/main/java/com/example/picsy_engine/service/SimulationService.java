@@ -1,17 +1,25 @@
 package com.example.picsy_engine.service;
 
-import com.example.picsy_engine.api.dto.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.ejml.simple.SimpleMatrix;
+import org.springframework.stereotype.Service;
+
+import com.example.picsy_engine.ContributionCalculator;
+import com.example.picsy_engine.api.dto.AddMemberRequest;
+import com.example.picsy_engine.api.dto.CompanyCreateRequest;
+import com.example.picsy_engine.api.dto.DecomposeResponse;
+import com.example.picsy_engine.api.dto.InitializeRequest;
+import com.example.picsy_engine.api.dto.MemberView;
+import com.example.picsy_engine.api.dto.StateResponse;
+import com.example.picsy_engine.api.dto.TransactionRequest;
+import com.example.picsy_engine.api.dto.UpdateMatrixRequest;
 import com.example.picsy_engine.domain.Member;
 import com.example.picsy_engine.domain.MemberType;
 import com.example.picsy_engine.state.StateStore;
 import com.example.picsy_engine.util.MatrixUtils;
-import com.example.picsy_engine.ContributionCalculator;
-import org.ejml.simple.SimpleMatrix;
-import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 
 /**
  * 事業ロジックを一手に引き受ける層。
@@ -225,5 +233,40 @@ public class SimulationService {
             ));
         }
         return out;
+    }
+    /**
+     * 初期化：与えられた names（任意）と matrix（必須）で状態を全置換する。
+     * - matrix は正方で非負
+     * - 行正規化はここで実施（Kahan 和＋残差集約）
+     * - names は null/サイズ不一致なら自動命名
+     */
+    public StateResponse initialize(InitializeRequest req){
+        // 1) 前提チェック
+        double[][] input = req.matrix();
+        if (input == null) throw new IllegalArgumentException("matrix is required");
+
+        // 2) 正方チェック
+        int n = input.length;
+        for (int i=0;i<n;i++){
+            if (input[i] == null || input[i].length != n){
+                throw new IllegalArgumentException("matrix must be square NxN");
+            }
+        }
+
+        // 3) コピーして正規化
+        double[][] normalized = com.example.picsy_engine.util.MatrixUtils.copy(input);
+        com.example.picsy_engine.util.MatrixUtils.normalizeRowsInPlace(normalized);
+
+        // 4) names はそのまま渡す（StateStore 側でも自動命名の守りあり）
+        List<String> names = req.names();
+
+        // 5) 全置換
+        store.resetWith(names, normalized);
+
+        // 6) ログ（粗粒度）
+        logs.log("INITIALIZE","n="+n+" (names="+(names==null? "auto" : names.size()+" items")+")");
+
+        // 7) 最新状態
+        return getState();
     }
 }

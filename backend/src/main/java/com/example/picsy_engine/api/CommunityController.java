@@ -1,13 +1,29 @@
 package com.example.picsy_engine.api;
 
-import com.example.picsy_engine.api.dto.*;
+import java.util.List;
+
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.example.picsy_engine.api.dto.AddMemberRequest;
+import com.example.picsy_engine.api.dto.CompanyCreateRequest;
+import com.example.picsy_engine.api.dto.DecomposeResponse;
+import com.example.picsy_engine.api.dto.InitializeRequest;
+import com.example.picsy_engine.api.dto.RecoveryRequest;
+import com.example.picsy_engine.api.dto.StateResponse;
+import com.example.picsy_engine.api.dto.TransactionRequest;
+import com.example.picsy_engine.api.dto.UpdateMatrixRequest;
 import com.example.picsy_engine.service.ActionLogService;
 import com.example.picsy_engine.service.SimulationService;
-import jakarta.validation.Valid;
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import jakarta.validation.Valid;
 
 /**
  * REST API の入り口。
@@ -73,4 +89,13 @@ public class CommunityController {
 
     @GetMapping("/logs")
     public List<String> logs(){ return logs.list(); }
+    // 先頭の import 群に足す：
+
+
+        // 初期化：人数と評価行列（names は任意）を受け取り、状態を全置換する
+        @PostMapping("/initialize")
+        public StateResponse initialize(@Valid @RequestBody InitializeRequest req){
+            return service.initialize(req);
+        }
+
 }
